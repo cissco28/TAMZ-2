@@ -4,24 +4,74 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/menu_background2"
     tools:context=".MainActivity">
 
-    <View
-        android:id="@+id/view"
+    <Button
+        android:id="@+id/exitGameButton"
+        style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="40dp"
+
+        android:fontFamily="sans-serif-black"
+        android:text="Exit game"
+        android:textColor="#060A22"
+        android:textSize="18sp"
+        app:backgroundTint="#041470"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settingsButton" />
+
+    <Button
+        android:id="@+id/newGameButton"
+        style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:fontFamily="sans-serif-black"
+        android:text="New Game"
+
+        android:textColor="#060A22"
+        android:textSize="18sp"
+        app:backgroundTint="#041470"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/resumeGameButton" />
+
+    <Button
+        android:id="@+id/resumeGameButton"
+        style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="208dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Resume game"
+
+        android:textColor="#060A22"
+        android:textSize="18sp"
+        app:backgroundTint="#041470"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.506"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/settingsButton"
+        style="@style/Widget.MaterialComponents.ExtendedFloatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="160dp"
-        android:text="Button"
+        android:layout_marginTop="40dp"
+        android:fontFamily="sans-serif-black"
+
+        android:text="Settings"
+        android:textColor="#060A22"
+        android:textSize="18sp"
+        app:backgroundTint="#041470"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/newGameButton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

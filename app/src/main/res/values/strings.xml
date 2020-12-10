@@ -1,3 +1,37 @@
 <resources>
     <string name="app_name">Pong_App</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <string name="ball_header">Ball</string>
+    <string name="player_header">Player</string>
+    <string name="game_header">Game</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <!-- Game Preferences -->
+    <string name="difficulty_title">Difficulty</string>
+    <string name="difficulty_default">Easy</string>
+
+    <!-- Ball Preferences -->
+    <string name="ball_color_title">Color</string>
+    <string name="ball_speed_increase_title">Enable speed increase</string>
+    <string name="ball_speed_title">Ball speed</string>
+    <string name="ball_size_title">Ball size</string>
+
+    <!-- Player Preferences -->
+    <string name="player_color_title">Player color</string>
+
 </resources>

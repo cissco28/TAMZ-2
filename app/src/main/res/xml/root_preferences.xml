@@ -1,0 +1,99 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <PreferenceCategory app:title="@string/messages_header">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/reply_entries"
+            app:entryValues="@array/reply_values"
+            app:key="reply"
+            app:title="@string/reply_title"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
+    </PreferenceCategory>
+
+    -------------------------------------------------------------
+
+
+    <PreferenceCategory app:title="@string/game_header">
+
+        <ListPreference
+            app:defaultValue="Easy"
+            app:entries="@array/game_difficulty"
+            app:entryValues="@array/game_difficulty"
+            app:key="difficulty"
+            app:title="@string/difficulty_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/ball_header">
+
+        <SeekBarPreference
+            app:key="ballSize"
+            app:title="@string/ball_size_title"
+            app:min="7"
+            android:max="21"
+            app:defaultValue="12"
+            />
+
+        <SeekBarPreference
+            app:key="ballSpeed"
+            app:title="@string/ball_speed_title"
+            app:min="300"
+            android:max="1000"
+            app:defaultValue="300"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="ballSpeedIncrease"
+            app:title="@string/ball_speed_increase_title" />
+
+        <ListPreference
+            app:defaultValue="white"
+            app:entries="@array/ball_color_entries"
+            app:entryValues="@array/ball_color_values"
+            app:key="ballColor"
+            app:title="@string/ball_color_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/player_header">
+
+        <ListPreference
+            app:defaultValue="white"
+            app:entries="@array/ball_color_entries"
+            app:entryValues="@array/ball_color_values"
+            app:key="playerColor"
+            app:title="@string/player_color_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
