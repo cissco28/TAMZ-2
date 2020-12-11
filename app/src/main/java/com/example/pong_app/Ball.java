@@ -2,17 +2,19 @@ package com.example.pong_app;
 
 import android.graphics.Color;
 
+import java.util.Random;
+
+
 public class Ball {
 
     public double x;
     public double y;
     public double speed;
     public double radius;
-    public int color;
+    public long color;
     public double angle;
 
     Ball(){
-
     }
 
     public void move(double deltaTime){
@@ -25,8 +27,12 @@ public class Ball {
         this.y += deltaY;
         this.x += deltaX;
 
+        //System.out.println(this.x);
+        //System.out.println(this.y);
+
 
         //this.x += speedX;
         //this.y += speedY;
     }
+
 }

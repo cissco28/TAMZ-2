@@ -11,15 +11,21 @@
     </string-array>
 
     <!-- Game color Preference -->
-    <string-array name="game_difficulty">
+    <string-array name="game_difficulty_entries">
         <item>Easy</item>
         <item>Medium</item>
         <item>Hard</item>
+    </string-array>
+
+    <string-array name="game_difficulty_values">
+        <item>0.1</item>
+        <item>0.15</item>
+        <item>0.2</item>
 
     </string-array>
 
-    <!-- Ball color Preference -->
-    <string-array name="ball_color_entries">
+    <!-- Color Preference -->
+    <string-array name="color_entries">
         <item>White</item>
         <item>Red</item>
         <item>Blue</item>
@@ -28,13 +34,33 @@
         <item>Gray</item>
     </string-array>
 
-    <string-array name="ball_color_values">
-        <item>0xFFFFFFFF</item>
-        <item>0xFFFF0000</item>
-        <item>0xFF0000FF</item>
-        <item>0xFF00FF00</item>
-        <item>0xFFFFFF00</item>
-        <item>0xFF888888</item>
+    <string-array name="color_values">
+        <item>FFFFFFFF</item>
+        <item>FFFF0000</item>
+        <item>FF0000FF</item>
+        <item>FF00FF00</item>
+        <item>FFFFFF00</item>
+        <item>FF888888</item>
+    </string-array>
+
+    <string-array name="background_color_entries">
+        <item>Black</item>
+        <item>White</item>
+        <item>Red</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Yellow</item>
+        <item>Gray</item>
+    </string-array>
+
+    <string-array name="background_color_values">
+        <item>00000000</item>
+        <item>FFFFFFFF</item>
+        <item>FFFF0000</item>
+        <item>FF0000FF</item>
+        <item>FF00FF00</item>
+        <item>FFFFFF00</item>
+        <item>FF888888</item>
     </string-array>
 
 

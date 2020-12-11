@@ -5,27 +5,33 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+
+import static com.example.pong_app.GameActivity.NEW_GAME;
+import static com.example.pong_app.GameActivity.RESUME_GAME;
+import static com.example.pong_app.GameActivity.TWO_PLAYERS_GAME;
 
 public class MainActivity extends AppCompatActivity {
-
-    Button resumeGameButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        resumeGameButton = findViewById(R.id.resumeGameButton);
-
-        resumeGameButton.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.resumeGameButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 resumeGame();
             }
         });
 
-        findViewById(R.id.newGameButton).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.twoPlayersGameButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newTwoPlayerGame();
+            }
+        });
+
+        findViewById(R.id.onePlayerGameButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 newGame();
@@ -39,14 +45,44 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+        findViewById(R.id.exitGameButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                exitgame();
+            }
+        });
     }
 
     public void resumeGame(){
-
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("game_state", RESUME_GAME);
+        startActivity(intent);
+        finish();
     }
 
     protected void newGame(){
-        startActivity(new Intent(getBaseContext(), GameActivity.class));
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("game_state", NEW_GAME);
+        startActivity(intent);
+        finish();
+    }
+
+    protected void newTwoPlayerGame(){
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("game_state", TWO_PLAYERS_GAME);
+        startActivity(intent);
+        finish();
+    }
+
+    protected void exitgame(){
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        startActivity(new Intent(this,MainActivity.class));
         finish();
     }
 

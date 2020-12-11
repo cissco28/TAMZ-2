@@ -1,5 +1,6 @@
 package com.example.pong_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
@@ -29,5 +30,11 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        startActivity(new Intent(this,MainActivity.class));
+        finish();
     }
 }

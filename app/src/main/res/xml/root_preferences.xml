@@ -1,7 +1,7 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-
+    <!--
     <PreferenceCategory app:title="@string/messages_header">
 
         <EditTextPreference
@@ -33,6 +33,7 @@
             app:title="@string/attachment_title" />
 
     </PreferenceCategory>
+    -->
 
     -------------------------------------------------------------
 
@@ -40,12 +41,46 @@
     <PreferenceCategory app:title="@string/game_header">
 
         <ListPreference
-            app:defaultValue="Easy"
-            app:entries="@array/game_difficulty"
-            app:entryValues="@array/game_difficulty"
+            app:defaultValue="0.1"
+            app:entries="@array/game_difficulty_entries"
+            app:entryValues="@array/game_difficulty_values"
             app:key="difficulty"
             app:title="@string/difficulty_title"
             app:useSimpleSummaryProvider="true"
+            />
+
+
+        <ListPreference
+            app:defaultValue="00000000"
+            app:entries="@array/background_color_entries"
+            app:entryValues="@array/background_color_values"
+            app:key="backgroundColor"
+            app:title="@string/background_color_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+
+        <SeekBarPreference
+            app:key="maxScore"
+            app:title="@string/score_size_title"
+            app:min="5"
+            android:max="50"
+            app:defaultValue="10"
+            />
+
+        <CheckBoxPreference
+            app:key="middleNet"
+            app:title="@string/game_middle_net_title"
+            />
+
+        <ListPreference
+            app:defaultValue="FFFFFFFF"
+            app:entries="@array/color_entries"
+            app:entryValues="@array/color_values"
+            app:key="netColor"
+            app:title="@string/net_color_title"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="middleNet"
             />
 
     </PreferenceCategory>
@@ -55,9 +90,9 @@
         <SeekBarPreference
             app:key="ballSize"
             app:title="@string/ball_size_title"
-            app:min="7"
-            android:max="21"
-            app:defaultValue="12"
+            app:min="10"
+            android:max="35"
+            app:defaultValue="20"
             />
 
         <SeekBarPreference
@@ -65,17 +100,18 @@
             app:title="@string/ball_speed_title"
             app:min="300"
             android:max="1000"
-            app:defaultValue="300"
+            app:defaultValue="500"
             />
 
         <SwitchPreferenceCompat
             app:key="ballSpeedIncrease"
-            app:title="@string/ball_speed_increase_title" />
+            app:title="@string/ball_speed_increase_title"
+            app:defaultValue="true"/>
 
         <ListPreference
-            app:defaultValue="white"
-            app:entries="@array/ball_color_entries"
-            app:entryValues="@array/ball_color_values"
+            app:defaultValue="FFFFFFFF"
+            app:entries="@array/color_entries"
+            app:entryValues="@array/color_values"
             app:key="ballColor"
             app:title="@string/ball_color_title"
             app:useSimpleSummaryProvider="true"
@@ -85,14 +121,51 @@
 
     <PreferenceCategory app:title="@string/player_header">
 
+        <SeekBarPreference
+            app:key="playerHeight"
+            app:title="@string/player_height_title"
+            app:min="15"
+            android:max="33"
+            app:defaultValue="25"
+            />
+
+        <SeekBarPreference
+            app:key="playerWidth"
+            app:title="@string/player_width_title"
+            app:min="10"
+            android:max="50"
+            app:defaultValue="25"
+            />
+
         <ListPreference
-            app:defaultValue="white"
-            app:entries="@array/ball_color_entries"
-            app:entryValues="@array/ball_color_values"
-            app:key="playerColor"
-            app:title="@string/player_color_title"
+            app:defaultValue="FFFFFFFF"
+            app:entries="@array/color_entries"
+            app:entryValues="@array/color_values"
+            app:key="player1Color"
+            app:title="@string/player1_color_title"
             app:useSimpleSummaryProvider="true"
             />
+
+
+        <ListPreference
+            app:defaultValue="FFFFFFFF"
+            app:entries="@array/color_entries"
+            app:entryValues="@array/color_values"
+            app:key="player2Color"
+            app:title="@string/player2_color_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+        <ListPreference
+            app:defaultValue="FFFFFFFF"
+            app:entries="@array/color_entries"
+            app:entryValues="@array/color_values"
+            app:key="scoreColor"
+            app:title="@string/score_color_title"
+            app:useSimpleSummaryProvider="true"
+            />
+
+
 
     </PreferenceCategory>
 

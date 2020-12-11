@@ -23,15 +23,22 @@
 
     <!-- Game Preferences -->
     <string name="difficulty_title">Difficulty</string>
-    <string name="difficulty_default">Easy</string>
+    <string name="game_middle_net_title">Draw middle net</string>
+    <string name="score_size_title">Winning score</string>
+    <string name="net_color_title">Net color</string>
+    <string name="background_color_title">Background color</string>
 
     <!-- Ball Preferences -->
-    <string name="ball_color_title">Color</string>
+    <string name="ball_color_title">Ball color</string>
     <string name="ball_speed_increase_title">Enable speed increase</string>
     <string name="ball_speed_title">Ball speed</string>
-    <string name="ball_size_title">Ball size</string>
+    <string name="ball_size_title">Ball radius</string>
 
     <!-- Player Preferences -->
-    <string name="player_color_title">Player color</string>
+    <string name="player1_color_title">Left player color</string>
+    <string name="player2_color_title">Right player color</string>
+    <string name="score_color_title">Score color</string>
+    <string name="player_height_title">Player height</string>
+    <string name="player_width_title">Player width</string>
 
 </resources>
