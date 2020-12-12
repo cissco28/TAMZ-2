@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -15,6 +17,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.preference.PreferenceManager;
 
 import java.util.Random;
@@ -30,12 +33,12 @@ import static com.example.pong_app.GameSet.PLAYERUP_SECTION_ANGLES;
 import static com.example.pong_app.GameSet.PLAYER_GRAVITY;
 import static com.example.pong_app.GameSet.PLAYER_SECTIONS;
 import static com.example.pong_app.GameSet.PLAYER_SECTION_ANGLES;
-import static com.example.pong_app.GameSet.PLAYER_SPACING;
 import static com.example.pong_app.GameSet.PLAYER_SPEED;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final Random random = new Random();
+    Drawable background;
     float yDiff;
     public Ball ball;
     public Player player1;
@@ -45,12 +48,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean running = true;
     private boolean paused;
     private boolean drawNet, ballSpeedIncrease;
+    private boolean drawFPS;
+    double avgFPS;
     Paint paint;
     int canvasWidth, canvasHeight;
     long SCORE_COLOR, NET_COLOR, BACKGROUND_COLOR;
     double BALL_INITIAL_SPEED;
     double DIFFICULTY;
-    int MAX_SCORE;
+    int MAX_SCORE, PLAYER_SPACING;
     float y1left,y2left, y1right,y2right;
     private int gameMode;
     private long previousTime;
@@ -67,29 +72,25 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
-    /*
+
     public GameView(Context context, AttributeSet attrs) {
         super(context);
-        //init(context);
     }
 
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context);
-        //init(context);
-    }*/
+    }
 
 
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void init(Context context){
-        //canvasWidth = getWidth();
-        //canvasHeight = getHeight();
-        //this.setClickable(true);
 
-        System.out.println(canvasWidth);
-        System.out.println(canvasHeight);
+        //System.out.println(canvasWidth);
+        //System.out.println(canvasHeight);
 
-        //getHolder().addCallback(this);
-        //gameThread = new GameThread(getHolder(), this);
+        drawFPS = false;
+        avgFPS = 0;
 
         surfaceHolder = getHolder();
 
@@ -98,7 +99,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         ball = new Ball();
         player1 = new Player(true);
         player2 = new Player(false);
-        //gameSet = new GameSet();
 
         //PreferenceManager.setDefaultValues(context, R.xml.root_preferences, false);
 
@@ -108,13 +108,29 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         DIFFICULTY = Double.parseDouble(sharedPreferences.getString("difficulty", "0.1"));
         MAX_SCORE = sharedPreferences.getInt("maxScore", 10);
         drawNet = sharedPreferences.getBoolean("middleNet", false);
+        drawFPS = sharedPreferences.getBoolean("drawFPS", false);
         ballSpeedIncrease = sharedPreferences.getBoolean("ballSpeedIncrease", true);
         SCORE_COLOR = Long.parseLong(sharedPreferences.getString("scoreColor", "FFFFFFFF"), 16);
+        PLAYER_SPACING = sharedPreferences.getInt("playerSpacing", 50);
 
         if(drawNet){
             NET_COLOR = Long.parseLong(sharedPreferences.getString("netColor", "FFFFFFFF"), 16);
         }
-        BACKGROUND_COLOR = Long.parseLong(sharedPreferences.getString("backgroundColor", "00000000"), 16);
+
+        if(sharedPreferences.getBoolean("bgIsImage", true)){
+
+            int bg = getResources().getIdentifier(sharedPreferences.getString("backgroundImage", "bg_space_720"),
+                                                    "drawable", context.getPackageName());
+
+            background = getResources().getDrawable(bg, null);
+            background.setBounds(0,0,canvasWidth, canvasHeight);
+
+            BACKGROUND_COLOR = -1;
+        }
+        else{
+            BACKGROUND_COLOR = Long.parseLong(sharedPreferences.getString("backgroundColor", "00000000"), 16);
+            background = null;
+        }
 
         ball.radius = sharedPreferences.getInt("ballSize", 20);
         ball.color = Long.parseLong(sharedPreferences.getString("ballColor", "FFFFFFFF"), 16);
@@ -199,13 +215,39 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
             paint = new Paint();
 
-            canvas.drawColor((int)BACKGROUND_COLOR);
-            //paint.setColor(Color.BLACK);
-            //canvas.drawRect((float)0, (float)0, (float)canvasWidth, (float)canvasHeight, paint);
+
+            if(BACKGROUND_COLOR == -1 ){            // && background != null
+                background.draw(canvas);
+            }
+            else{
+                canvas.drawColor((int)BACKGROUND_COLOR);
+                //paint.setColor(Color.BLACK);
+                //canvas.drawRect((float)0, (float)0, (float)canvasWidth, (float)canvasHeight, paint);
+            }
+
+            if(drawFPS){
+                paint.setColor(Color.YELLOW);
+                paint.setTextSize(50);
+                canvas.drawText(String.valueOf(avgFPS), 1, 51, paint);
+            }
 
             //----- NET
             if(drawNet){
-
+                paint.setColor((int)NET_COLOR);
+                paint.setStrokeWidth(5);
+                double y = 0;
+                double x = canvasWidth/2;
+                double h = canvasHeight/15;
+                while(true){
+                    if(y + 2*h < canvasHeight){
+                        canvas.drawLine((float)x, (float)y, (float)x, (float)y + (float)h, paint);
+                    }
+                    else{
+                        canvas.drawLine((float)x, (float)y, (float)x, canvasHeight, paint);
+                        break;
+                    }
+                    y += 2*h;
+                }
             }
 
             //----- BALL
@@ -471,6 +513,27 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 }
                 break;
             }
+            /*
+            case MotionEvent.ACTION_MOVE: {
+                if(!left && gameMode == 2){
+                    y2right = event.getY();
+                    yDiff = y1right - y2right;
+                    y1right = y2right;
+
+                        player2.moveDiff(yDiff);
+
+                }
+                else{
+                    y2left = event.getY();
+                    yDiff = y1left - y2left;
+                    y1left = y2left;
+
+                        player1.moveDiff(yDiff);
+
+                }
+                break;
+            }*/
+
             case MotionEvent.ACTION_MOVE: {
                 if(!left && gameMode == 2){
                     y2right = event.getY();
@@ -496,28 +559,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         player1.downAccel = true;
                     }
                 }
-
-                /*
-                float yDiff = y1 - y2;
-                y1 = y2;
-
-                if (yDiff > 1) {
-                    player1.upAccel = true;
-                    player1.downAccel = false;
-                    System.out.println("kokos move");
-                    return false;
-                } else if (yDiff < 1) {
-                    player1.upAccel = false;
-                    player1.downAccel = true;
-                    System.out.println("kokos move");
-                    return false;
-                }
-
-                else {
-                    player1.upAccel = false;
-                    player1.downAccel = false;
-                    System.out.println("kokos stoped");
-                }*/
                 break;
             }
             case MotionEvent.ACTION_UP: {
@@ -539,6 +580,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         return this.gameThread;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder holder) {
         canvasWidth = getWidth();
@@ -580,6 +622,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public long getPreviousTime() {
         return this.previousTime;
+    }
+
+
+    public void setAvgFPS(double fps){
+        this.avgFPS = fps;
     }
 }
 

@@ -52,22 +52,26 @@ public class GameThread extends Thread{
 
             timeMillis = (System.nanoTime() - startTime) / 1000000;
             waitTime =  timeMillis - targetTime;
-            if(waitTime < 10){
-                waitTime = 10;
+
+            if(waitTime < 1){
+                waitTime = 1;
             }
 
+            /*
             try {
                 this.sleep(waitTime);
             } catch (Exception e) {
                 e.printStackTrace();
-            }
+            }*/
 
             totalTime += System.nanoTime() - startTime;
             frameCount++;
+
             if (frameCount == fps) {
                 avgFps = 1000 / ((totalTime / frameCount) / 1000000);
                 frameCount = 0;
                 totalTime = 0;
+                gameView.setAvgFPS(avgFps);
                 System.out.println(avgFps);
             }
 

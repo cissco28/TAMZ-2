@@ -3,10 +3,9 @@ package com.example.pong_app;
 public final class GameSet {
     public static final int MAX_BALL_SPEED = 1500;
     public static final double PLAYER_SPEED = 1.5;
-    public static final int PLAYER_SPACING = 10;
     public static final int PLAYER_SECTIONS = 11;
     public static final double BALL_SPEED_INCREASE = -1.25;
-    public static final double PLAYER_GRAVITY = 0.9;
+    public static final double PLAYER_GRAVITY = 0.5;
 
     public static final double[] PLAYER_SECTION_ANGLES = new double[] {-60 * Math.PI / 180, -48 * Math.PI / 180,
             -36 * Math.PI / 180, -24 * Math.PI / 180,

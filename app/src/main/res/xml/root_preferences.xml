@@ -49,6 +49,25 @@
             app:useSimpleSummaryProvider="true"
             />
 
+        <CheckBoxPreference
+            app:key="drawFPS"
+            app:title="@string/draw_FPS_title"
+            />
+
+        <SwitchPreferenceCompat
+            app:key="bgIsImage"
+            app:title="@string/background_is_image_title"
+            app:defaultValue="true"/>
+
+        <ListPreference
+            app:defaultValue="bg_space_720"
+            app:entries="@array/background_image_entries"
+            app:entryValues="@array/background_image_values"
+            app:key="backgroundImage"
+            app:title="@string/background_image_title"
+            app:useSimpleSummaryProvider="true"
+            app:dependency="bgIsImage"
+            />
 
         <ListPreference
             app:defaultValue="00000000"
@@ -135,6 +154,14 @@
             app:min="10"
             android:max="50"
             app:defaultValue="25"
+            />
+
+        <SeekBarPreference
+            app:key="playerSpacing"
+            app:title="@string/player_spacing_title"
+            app:min="10"
+            android:max="200"
+            app:defaultValue="50"
             />
 
         <ListPreference

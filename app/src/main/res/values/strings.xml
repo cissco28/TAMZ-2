@@ -27,6 +27,9 @@
     <string name="score_size_title">Winning score</string>
     <string name="net_color_title">Net color</string>
     <string name="background_color_title">Background color</string>
+    <string name="background_image_title">Background image</string>
+    <string name="background_is_image_title">Image background</string>
+    <string name="draw_FPS_title">Display FPS</string>
 
     <!-- Ball Preferences -->
     <string name="ball_color_title">Ball color</string>
@@ -40,5 +43,6 @@
     <string name="score_color_title">Score color</string>
     <string name="player_height_title">Player height</string>
     <string name="player_width_title">Player width</string>
+    <string name="player_spacing_title">Player spacing</string>
 
 </resources>

@@ -29,19 +29,19 @@ public class Player {
 
     public void move(){
         if(upAccel){
-            speed -= 3;
+            speed -= 5;
         }
         else if(downAccel){
-            speed += 3;
+            speed += 5;
         }
         else if(!upAccel && !downAccel){
             speed *= gravity;
         }
 
-        if(speed >= 15)
-            speed = 15;
-        else if(speed <= -15)
-            speed = -15;
+        if(speed >= 25)
+            speed = 25;
+        else if(speed <= -25)
+            speed = -25;
 
         y += speed;
 
@@ -57,6 +57,11 @@ public class Player {
             this.movingUp = false;
             this.movingDown = false;
         }
+
+    }
+
+    public void moveDiff(float diff){
+
 
     }
 
