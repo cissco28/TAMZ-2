@@ -49,10 +49,25 @@
             app:useSimpleSummaryProvider="true"
             />
 
+        <SwitchPreferenceCompat
+            app:key="limitFPS"
+            app:title="@string/limite_fps_title"
+            app:defaultValue="false"/>
+
+        <SeekBarPreference
+            app:key="maxFPS"
+            app:title="@string/max_fps_title"
+            app:min="30"
+            android:max="100"
+            app:defaultValue="60"
+            app:dependency="limitFPS"
+            />
+
         <CheckBoxPreference
             app:key="drawFPS"
             app:title="@string/draw_FPS_title"
             />
+
 
         <SwitchPreferenceCompat
             app:key="bgIsImage"
@@ -117,9 +132,9 @@
         <SeekBarPreference
             app:key="ballSpeed"
             app:title="@string/ball_speed_title"
-            app:min="300"
+            app:min="200"
             android:max="1000"
-            app:defaultValue="500"
+            app:defaultValue="300"
             />
 
         <SwitchPreferenceCompat

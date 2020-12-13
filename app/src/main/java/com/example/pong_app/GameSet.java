@@ -1,7 +1,7 @@
 package com.example.pong_app;
 
 public final class GameSet {
-    public static final int MAX_BALL_SPEED = 1500;
+    public static final int MAX_BALL_SPEED = 1000;
     public static final double PLAYER_SPEED = 1.5;
     public static final int PLAYER_SECTIONS = 11;
     public static final double BALL_SPEED_INCREASE = -1.25;

@@ -48,13 +48,17 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean running = true;
     private boolean paused;
     private boolean drawNet, ballSpeedIncrease;
-    private boolean drawFPS;
-    double avgFPS;
+    private boolean drawFPS, limiteFPS;
+    int avgFPS = 0;
+    double frameTime;
+    double diffTime = 0;
+    int FPS;
     Paint paint;
     int canvasWidth, canvasHeight;
     long SCORE_COLOR, NET_COLOR, BACKGROUND_COLOR;
     double BALL_INITIAL_SPEED;
     double DIFFICULTY;
+    double secondsElapsed;
     int MAX_SCORE, PLAYER_SPACING;
     float y1left,y2left, y1right,y2right;
     private int gameMode;
@@ -86,12 +90,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void init(Context context){
 
-        //System.out.println(canvasWidth);
-        //System.out.println(canvasHeight);
-
-        drawFPS = false;
-        avgFPS = 0;
-
         surfaceHolder = getHolder();
 
         paint = new Paint();
@@ -104,7 +102,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        BALL_INITIAL_SPEED = sharedPreferences.getInt("ballSpeed", 500);
+        limiteFPS = sharedPreferences.getBoolean("limitFPS", false);
+        if(limiteFPS){
+            FPS = sharedPreferences.getInt("maxFPS", 60);
+            frameTime = 1/(double)FPS;
+        }
+
+
+        BALL_INITIAL_SPEED = sharedPreferences.getInt("ballSpeed", 300);
+        //BALL_INITIAL_SPEED = 250;
         DIFFICULTY = Double.parseDouble(sharedPreferences.getString("difficulty", "0.1"));
         MAX_SCORE = sharedPreferences.getInt("maxScore", 10);
         drawNet = sharedPreferences.getBoolean("middleNet", false);
@@ -149,19 +155,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         player2.gravity = PLAYER_GRAVITY;
         player2.color = Long.parseLong(sharedPreferences.getString("player2Color", "FFFFFFFF"), 16);
 
-        System.out.println(player1.x);
-        System.out.println(player1.y);
-        System.out.println(player1.color);
-        System.out.println(player1.width);
-        System.out.println(player1.height);
-
-        System.out.println(player2.x);
-        System.out.println(player2.y);
-        System.out.println(player2.color);
-        System.out.println(player2.width);
-        System.out.println(player2.height);
-
-
         if(gameState == NEW_GAME){
             gameMode = 1;
             previousTime = 0;
@@ -182,10 +175,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         resetBall();
 
         player1.x = PLAYER_SPACING;
-        player1.y = canvasHeight/2;
+        player1.y = (float)canvasHeight/2;
 
         player2.x = canvasWidth - PLAYER_SPACING - player1.width;
-        player2.y = canvasHeight/2;
+        player2.y = (float)canvasHeight/2;
     }
 
     protected void prepareResumeGame(){
@@ -193,23 +186,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if(sharedPreferences != null) {
             gameMode = sharedPreferences.getInt("game_mode", 1);
             previousTime = sharedPreferences.getLong("previous_time", 0);
-            ball.x = sharedPreferences.getFloat("ball_x", canvasWidth/2);
-            ball.y = sharedPreferences.getFloat("ball_y", canvasHeight/2);
+            ball.x = sharedPreferences.getFloat("ball_x", (float) canvasWidth/2);
+            ball.y = sharedPreferences.getFloat("ball_y", (float)canvasHeight/2);
             ball.speed = sharedPreferences.getFloat("ball_speed", 500);
             ball.angle = sharedPreferences.getFloat("ball_angle", 20);
-            player1.y = sharedPreferences.getFloat("player1_y", canvasHeight/2);
+            player1.y = sharedPreferences.getFloat("player1_y", (float)canvasHeight/2);
             player1.score = sharedPreferences.getInt("player1_score", 0);
-            player2.y = sharedPreferences.getFloat("player2_y", canvasHeight/2);
+            player2.y = sharedPreferences.getFloat("player2_y", (float)canvasHeight/2);
             player2.score = sharedPreferences.getInt("player2_score", 0);
         }
     }
 
-
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-
-
+    public void redraw(Canvas canvas){
         if (surfaceHolder.getSurface().isValid()) {
             //canvas = surfaceHolder.lockCanvas();
 
@@ -220,9 +208,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 background.draw(canvas);
             }
             else{
-                canvas.drawColor((int)BACKGROUND_COLOR);
-                //paint.setColor(Color.BLACK);
-                //canvas.drawRect((float)0, (float)0, (float)canvasWidth, (float)canvasHeight, paint);
+                //canvas.drawColor((int)BACKGROUND_COLOR);
+                paint.setColor(Color.BLACK);
+                canvas.drawRect((float)0, (float)0, (float)canvasWidth, (float)canvasHeight, paint);
             }
 
             if(drawFPS){
@@ -270,11 +258,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
             //surfaceHolder.unlockCanvasAndPost(canvas);
         }
+    }
 
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+
         super.onDraw(canvas);
     }
 
@@ -353,12 +346,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         } catch (InterruptedException e) {
             Log.e("Error:", "joining thread");
         }
+        previousTime = 0;
     }
 
 
     public void resume() {
-        gameThread.setRunning(false);
-        gameThread = new GameThread(surfaceHolder, this);
+        gameThread = new GameThread(surfaceHolder, this, FPS, limiteFPS);
+        gameThread.setRunning(true);
         gameThread.start();
     }
 
@@ -369,6 +363,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if(paused){
             pause();
         }
+
 
         if (previousTime == 0) {
             previousTime = currentTime;
@@ -461,16 +456,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-        double secondsElapsed = (currentTime - previousTime) / 1_000_000_000.0;
+        //secondsElapsed = (currentTime - previousTime) / 1_000_000_000.0;
 
 
         //System.out.println(secondsElapsed);
 
-        if (secondsElapsed > 0.0333) {
-            secondsElapsed = 0.0333;
-        }
 
-        ball.move(secondsElapsed);
+        /*
+        if (secondsElapsed > 1/FPS) {
+            secondsElapsed = 1/FPS;
+        }*/
+
+        //ball.move(secondsElapsed);
+
+
+        //ball.move(frameTime);
+        diffTime = (System.nanoTime() - previousTime) / 1_000_000_000.0;
+        ball.move(diffTime);
+        previousTime = System.nanoTime();
 
         //System.out.println(ball.x);
         //System.out.println(ball.y);
@@ -511,6 +514,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 else{
                     y1left = event.getY();
                 }
+                pause();
                 break;
             }
             /*
@@ -570,6 +574,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     player1.upAccel = false;
                     player1.downAccel = false;
                 }
+                resume();
                 break;
             }
         }
@@ -588,7 +593,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         init(getContext());
 
-        this.gameThread = new GameThread(holder,this);
+        //holder.setFixedSize(canvasWidth, canvasHeight);
+
+        this.gameThread = new GameThread(holder,this, FPS, limiteFPS);
         this.gameThread.setRunning(true);
         this.gameThread.start();
     }
@@ -626,7 +633,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public void setAvgFPS(double fps){
-        this.avgFPS = fps;
+        this.avgFPS = (int)fps;
     }
 }
 

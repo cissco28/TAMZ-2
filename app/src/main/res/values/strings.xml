@@ -30,6 +30,8 @@
     <string name="background_image_title">Background image</string>
     <string name="background_is_image_title">Image background</string>
     <string name="draw_FPS_title">Display FPS</string>
+    <string name="max_fps_title">Max FPS</string>
+    <string name="limite_fps_title">Limite FPS</string>
 
     <!-- Ball Preferences -->
     <string name="ball_color_title">Ball color</string>
