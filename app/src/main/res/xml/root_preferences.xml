@@ -75,7 +75,7 @@
             app:defaultValue="true"/>
 
         <ListPreference
-            app:defaultValue="bg_space_720"
+            app:defaultValue="bg_space"
             app:entries="@array/background_image_entries"
             app:entryValues="@array/background_image_values"
             app:key="backgroundImage"
@@ -141,6 +141,14 @@
             app:key="ballSpeedIncrease"
             app:title="@string/ball_speed_increase_title"
             app:defaultValue="true"/>
+
+        <SeekBarPreference
+            app:key="maxBallSpeed"
+            app:title="@string/max_ball_speed_title"
+            app:min="750"
+            android:max="1500"
+            app:defaultValue="1200"
+            />
 
         <ListPreference
             app:defaultValue="FFFFFFFF"

@@ -74,14 +74,91 @@ public class GameActivity extends AppCompatActivity {
 
         myEdit.putInt("player1_score", gameView.player1.score);
         myEdit.putFloat("player1_y", (float)gameView.player1.y);
+        myEdit.putFloat("player1_move_y", (float)gameView.player1.moveY);
 
         myEdit.putInt("player2_score", gameView.player2.score);
         myEdit.putFloat("player2_y", (float)gameView.player2.y);
+        myEdit.putFloat("player2_move_y", (float)gameView.player2.moveY);
 
         myEdit.commit();
 
         startActivity(new Intent(this,MainActivity.class));
         finish();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean left = event.getX() < gameView.canvasWidth/2;
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN: {
+                if(!left && gameView.gameMode == 2)
+                    gameView.y1right = event.getY();
+                else{
+                    gameView.y1left = event.getY();
+                }
+                break;
+            }
+            /*
+            case MotionEvent.ACTION_MOVE: {
+                if(!left && gameMode == 2){
+                    y2right = event.getY();
+                    yDiff = y1right - y2right;
+                    y1right = y2right;
+
+                        player2.moveDiff(yDiff);
+
+                }
+                else{
+                    y2left = event.getY();
+                    yDiff = y1left - y2left;
+                    y1left = y2left;
+
+                        player1.moveDiff(yDiff);
+
+                }
+                break;
+            }*/
+
+            case MotionEvent.ACTION_MOVE: {
+                if(!left && gameView.gameMode == 2){
+                    gameView.y2right = event.getY();
+                    gameView.yDiff = gameView.y1right - gameView.y2right;
+                    gameView.y1right = gameView.y2right;
+                    if (gameView.yDiff > 1) {
+                        gameView.player2.upAccel = true;
+                        gameView.player2.downAccel = false;
+                    } else if (gameView.yDiff < -1) {
+                        gameView.player2.upAccel = false;
+                        gameView.player2.downAccel = true;
+                    }
+                }
+                else{
+                    gameView.y2left = event.getY();
+                    gameView.yDiff = gameView.y1left - gameView.y2left;
+                    gameView.y1left = gameView.y2left;
+                    if (gameView.yDiff > 1) {
+                        gameView.player1.upAccel = true;
+                        gameView.player1.downAccel = false;
+                    } else if (gameView.yDiff < -1) {
+                        gameView.player1.upAccel = false;
+                        gameView.player1.downAccel = true;
+                    }
+                }
+                break;
+            }
+            case MotionEvent.ACTION_UP: {
+                if(!left && gameView.gameMode == 2){
+                    gameView.player2.upAccel = false;
+                    gameView.player2.downAccel = false;
+                }
+                else {
+                    gameView.player1.upAccel = false;
+                    gameView.player1.downAccel = false;
+                }
+                break;
+            }
+        }
+        return true;
     }
 
     @Override

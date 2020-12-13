@@ -66,23 +66,31 @@
     <string-array name="background_image_entries">
         <item>Space</item>
         <item>Blue something 1</item>
-        <item>Blue something 2 720p</item>
-        <item>Blue something 2 1080p</item>
+        <item>Blue something 2</item>
         <item>Some dots</item>
-        <item>Purple something 1 720p</item>
-        <item>Purple something 1 1440p</item>
+        <item>Purple something 1</item>
         <item>Purple something 2</item>
+        <item>Space 720p</item>
+        <item>Blue something 1 720p</item>
+        <item>Blue something 2 720p</item>
+        <item>Some dots 720p</item>
+        <item>Purple something 1 720p</item>
+        <item>Purple something 2 720p</item>
     </string-array>
 
     <string-array name="background_image_values">
-        <item>bg_space_720</item>
+        <item>bg_space</item>
         <item>bg_blue_1</item>
-        <item>bg_blue_2_720</item>
-        <item>bg_blue_2_1080</item>
+        <item>bg_blue_2</item>
         <item>bg_dots</item>
-        <item>bg_purple_1_720</item>
-        <item>bg_purple_1_1440</item>
+        <item>bg_purple_1</item>
         <item>bg_purple_2</item>
+        <item>bg_space_720p</item>
+        <item>bg_blue_1_720p</item>
+        <item>bg_blue_2_720p</item>
+        <item>bg_dots_720p</item>
+        <item>bg_purple_1_720p</item>
+        <item>bg_purple_2_720p</item>
     </string-array>
 
 

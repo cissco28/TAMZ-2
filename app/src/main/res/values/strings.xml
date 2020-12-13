@@ -38,6 +38,7 @@
     <string name="ball_speed_increase_title">Enable speed increase</string>
     <string name="ball_speed_title">Ball speed</string>
     <string name="ball_size_title">Ball radius</string>
+    <string name="max_ball_speed_title">Max ball speed</string>
 
     <!-- Player Preferences -->
     <string name="player1_color_title">Left player color</string>
