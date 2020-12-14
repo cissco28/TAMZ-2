@@ -40,26 +40,29 @@ public class GameThread extends Thread{
             try {
                 this.gameView.update(startTime);
                 canvas = this.surfaceHolder.lockCanvas();
-                if (canvas != null) {
-                    synchronized (canvas) {
-                        //this.gameView.draw(canvas);
-                        this.gameView.redraw(canvas);
-                        //surfaceHolder.unlockCanvasAndPost(canvas);
-                    }
+                if (canvas == null) {
+                    return;
                 }
+                synchronized (canvas) {
+                    //this.gameView.draw(canvas);
+                    this.gameView.redraw(canvas);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            /*
             finally {
-                if (canvas != null) {
+                //if (canvas != null) {
                     try {
                         this.surfaceHolder.unlockCanvasAndPost(canvas);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-            }
+                //}
+            }*/
 
             //--------- sleep ----------------------------------------------------
             if(limitFPS) {
@@ -97,9 +100,14 @@ public class GameThread extends Thread{
                 //}
             //}
             }
-
-            //super.run();
         }
+
+        /*
+        if(surfaceHolder.lockCanvas() == null){
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }*/
+
+        //super.run();
     }
 
     public void setRunning(boolean r){

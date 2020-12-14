@@ -26,8 +26,12 @@ import androidx.preference.PreferenceManager;
 import java.util.Random;
 
 import static android.content.Context.MODE_PRIVATE;
+import static com.example.pong_app.GameActivity.HIT_PADDLE;
+import static com.example.pong_app.GameActivity.HIT_WALL;
 import static com.example.pong_app.GameActivity.NEW_GAME;
 import static com.example.pong_app.GameActivity.RESUME_GAME;
+import static com.example.pong_app.GameActivity.SCORE_LEFT;
+import static com.example.pong_app.GameActivity.SCORE_RIGHT;
 import static com.example.pong_app.GameActivity.TWO_PLAYERS_GAME;
 import static com.example.pong_app.GameSet.BALL_SPEED_INCREASE;
 import static com.example.pong_app.GameSet.PLAYERDOWN_SECTION_ANGLES;
@@ -71,6 +75,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     long moveRightTime, moveLeftTime;
     GameActivity gameActivity;
     String winner;
+    boolean up = true;
     SoundPool soundPool;
 
     public GameView(Context context, GameActivity activity, SoundPool sp) {
@@ -395,18 +400,30 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void pause() {
         paused = true;
+        up = false;
         gameThread.setRunning(false);
-        try {
-            gameThread.join();
-        } catch (InterruptedException e) {
-            Log.e("Error:", "joining thread");
+        boolean retry = true;
+        while(retry) {
+            try {
+
+                // Parent thread must wait until the end of GameThread.
+                this.gameThread.join();
+                retry = false;
+            }catch(InterruptedException e)  {
+                e.printStackTrace();
+                retry = true;
+            }
+
         }
         previousTime = 0;
     }
 
     public void pauseGame(){
         pause();
-        //drawPause();
+        /*
+        if(surfaceHolder.lockCanvas() == null){
+
+        }*/
     }
 
     private void winPlayer(boolean left){
@@ -434,10 +451,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         gameThread = new GameThread(surfaceHolder, this, FPS, limiteFPS);
         gameThread.setRunning(true);
         gameThread.start();
-        paused = false;
     }
 
     protected void update(long currentTime){
+
+        if(paused || endGame){
+            return;
+        }
 
         if (previousTime == 0) {
             previousTime = currentTime;
@@ -462,13 +482,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (ball.x <= 0) {
             //userScore.play();
             player2.score++;
-            soundPool.play(gameActivity.scoreRigh, 1.0f,1.0f,1,0,1.0f);
+            soundPool.play(SCORE_RIGHT, 1.0f,1.0f,1,0,1.0f);
             resetBall();
         }
 
         else if (ball.x >= canvasWidth) {
             //oppScore.play();
-            soundPool.play(gameActivity.scoreLeft, 1.0f,1.0f,1,0,1.0f);
+            soundPool.play(SCORE_LEFT, 1.0f,1.0f,1,0,1.0f);
             player1.score++;
             resetBall();
         }
@@ -476,12 +496,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         //-------------------- kontrola kolizie micku s vrchnym a spodnym okrajom ------------------
         if (ball.y + ball.radius >= canvasHeight) {
-            soundPool.play(gameActivity.hitWall, 1.0f,1.0f,1,0,1.0f);
+            soundPool.play(HIT_WALL, 1.0f,1.0f,1,0,1.0f);
             ball.angle = ball.angle * -1;
             ball.y = canvasHeight - ball.radius - 1;
         }
         else if (ball.y - ball.radius <= 0) {
-            soundPool.play(gameActivity.hitWall, 1.0f,1.0f,1,0,1.0f);
+            soundPool.play(HIT_WALL, 1.0f,1.0f,1,0,1.0f);
             ball.angle = ball.angle * -1;
             ball.y = ball.radius + 1;
         }
@@ -498,14 +518,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         if(ball.x < canvasWidth / 2){
             if(collision(ball, player1)){
-                soundPool.play(gameActivity.hitPaddle, 1.0f,1.0f,1,0,1.0f);
+                soundPool.play(HIT_PADDLE, 1.0f,1.0f,1,0,1.0f);
                 playerBallCollision(player1);
             }
 
         }
         else{
             if(collision(ball, player2)){
-                soundPool.play(gameActivity.hitPaddle, 1.0f,1.0f,1,0,1.0f);
+                soundPool.play(HIT_PADDLE, 1.0f,1.0f,1,0,1.0f);
                 playerBallCollision(player2);
             }
         }
@@ -592,10 +612,97 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             }catch(InterruptedException e)  {
                 e.printStackTrace();
+                retry = true;
             }
-            //retry= true;
         }
 
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if(!paused && !endGame) {
+            boolean left = event.getX() < canvasWidth / 2;
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN: {
+                    if (!left && gameMode == 2)
+                        y1right = event.getY();
+                    else {
+                        y1left = event.getY();
+                    }
+                    break;
+                }
+
+                case MotionEvent.ACTION_MOVE: {
+                    if (!left && gameMode == 2) {
+
+                        y2right = event.getY();
+                        yDiff = y2right - y1right;
+                        if (yDiff < 0) {
+                            player2.movingDown = false;
+                            player2.movingUp = true;
+                        } else if (yDiff > 0) {
+                            player2.movingUp = false;
+                            player2.movingDown = true;
+                        }
+                        y1right = y2right;
+
+                        moveRightTime = System.nanoTime();
+
+                        player2.moveDiff(yDiff);
+
+                    } else {
+
+                        y2left = event.getY();
+                        yDiff = y2left - y1left;
+                        if (yDiff < 0) {
+                            player1.movingDown = false;
+                            player1.movingUp = true;
+                        } else if (yDiff > 0) {
+                            player1.movingUp = false;
+                            player1.movingDown = true;
+                        }
+                        y1left = y2left;
+
+                        moveLeftTime = System.nanoTime();
+
+                        player1.moveDiff(yDiff);
+
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    if (!left && gameMode == 2) {
+                        player2.movingUp = false;
+                        player2.movingDown = false;
+                    } else {
+                        player1.movingUp = false;
+                        player1.movingDown = false;
+                    }
+                    break;
+                }
+            }
+        }
+        else{
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN: {
+                    up = true;
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    if(up){
+                        if(endGame){
+                            prepareNewGame();
+                        }
+                        else {
+                            resume();
+                        }
+                    }
+                    up = false;
+                    break;
+                }
+            }
+        }
+        return true;
     }
 
     public int getGameMode(){

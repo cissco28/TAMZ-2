@@ -23,9 +23,10 @@ public class GameActivity extends AppCompatActivity {
     public static int NEW_GAME = 1;
     public static int TWO_PLAYERS_GAME = 2;
     public static int RESUME_GAME = 3;
+    public static int HIT_WALL, HIT_PADDLE, SCORE_LEFT, SCORE_RIGHT;
     float y1left,y2left, y1right,y2right, yDiff;
     long moveRightTime, moveLeftTime;
-    boolean up;
+    boolean up = false;
     int tapCounter;
     long tapTime;
     int hitWall, hitPaddle, scoreLeft, scoreRigh;
@@ -36,10 +37,10 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
-        hitWall = soundPool.load(this, R.raw.hit_wall, 1);
-        hitPaddle = soundPool.load(this, R.raw.hit_paddle, 1);
-        scoreLeft = soundPool.load(this, R.raw.score_player, 1);
-        scoreRigh = soundPool.load(this, R.raw.score_opponent, 1);
+        HIT_WALL = soundPool.load(this, R.raw.hit_wall, 1);
+        HIT_PADDLE = soundPool.load(this, R.raw.hit_paddle, 1);
+        SCORE_LEFT = soundPool.load(this, R.raw.score_player, 1);
+        SCORE_RIGHT = soundPool.load(this, R.raw.score_opponent, 1);
 
         gameView = new GameView(this, this,soundPool);
 
@@ -113,6 +114,7 @@ public class GameActivity extends AppCompatActivity {
         }
     }
 
+    /*
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if(!gameView.paused && !gameView.endGame) {
@@ -198,7 +200,7 @@ public class GameActivity extends AppCompatActivity {
             }
         }
         return true;
-    }
+    }*/
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
