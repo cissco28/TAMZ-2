@@ -17,7 +17,7 @@ public class Player {
     public int score;
     public boolean movingUp;
     public boolean movingDown;
-    public float moveY;
+    public double moveY;
 
     public Player(boolean l){
         this.left = l;
@@ -28,46 +28,9 @@ public class Player {
         this.movingDown = false;
     }
 
-    public void move(){
-        if(upAccel){
-            speed -= 10;
-        }
-        else if(downAccel){
-            speed += 10;
-        }
-        else if(!upAccel && !downAccel){
-            speed *= gravity;
-        }
 
-        if(speed >= 30)
-            speed = 30;
-        else if(speed <= -30)
-            speed = -30;
-
-        y += speed;
-
-        if(speed > 0.1){
-            this.movingUp = true;
-            this.movingDown = false;
-        }
-        else if(speed < -0.1){
-            this.movingUp = false;
-            this.movingDown = true;
-        }
-        else {
-            this.movingUp = false;
-            this.movingDown = false;
-        }
-
-    }
-
-    public void moveDiff(){
-        if(moveY < y + width/2) {
-            y += speed;
-        }
-        else if(moveY > y + width/2){
-
-        }
+    public void moveDiff(float diff){
+        y += diff;
 
     }
 

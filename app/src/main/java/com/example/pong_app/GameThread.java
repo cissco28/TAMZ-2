@@ -6,7 +6,7 @@ import android.view.SurfaceHolder;
 public class GameThread extends Thread{
 
     private int fps;
-    private double avgFps;
+    private float avgFps;
     private GameView gameView;
     private SurfaceHolder surfaceHolder;
     private boolean running;
@@ -40,13 +40,18 @@ public class GameThread extends Thread{
             try {
                 this.gameView.update(startTime);
                 canvas = this.surfaceHolder.lockCanvas();
-                synchronized (canvas) {
-                    //this.gameView.draw(canvas);
-                    this.gameView.redraw(canvas);
+                if (canvas != null) {
+                    synchronized (canvas) {
+                        //this.gameView.draw(canvas);
+                        this.gameView.redraw(canvas);
+                        //surfaceHolder.unlockCanvasAndPost(canvas);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
+            }
+
+            finally {
                 if (canvas != null) {
                     try {
                         this.surfaceHolder.unlockCanvasAndPost(canvas);
@@ -55,24 +60,6 @@ public class GameThread extends Thread{
                     }
                 }
             }
-
-            //------------- FPS -------------------------------
-            totalTime += System.nanoTime() - startTime;
-            frameCount++;
-
-            if(totalTime >= 1000_000_000){
-            //if (limitFPS){
-                //if (frameCount == fps) {
-                    avgFps = 1000 / (( totalTime / frameCount) / 1000000);
-                    frameCount = 0;
-                    totalTime = 0;
-                    gameView.setAvgFPS(avgFps);
-                    System.out.println(avgFps);
-                //}
-            //}
-            }
-
-
 
             //--------- sleep ----------------------------------------------------
             if(limitFPS) {
@@ -93,6 +80,22 @@ public class GameThread extends Thread{
                         e.printStackTrace();
                     }
                 }
+            }
+
+            //------------- FPS -------------------------------
+            totalTime += System.nanoTime() - startTime;
+            frameCount++;
+
+            if(totalTime >= 1_000_000_000){
+            //if (limitFPS){
+                //if (frameCount == fps) {
+                    avgFps = 1000 / (( totalTime / frameCount) / 1000000);
+                    frameCount = 0;
+                    totalTime = 0;
+                    gameView.setAvgFPS(avgFps);
+                    System.out.println(avgFps);
+                //}
+            //}
             }
 
             //super.run();

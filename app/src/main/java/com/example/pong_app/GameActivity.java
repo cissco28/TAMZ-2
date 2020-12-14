@@ -6,8 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -19,14 +23,28 @@ public class GameActivity extends AppCompatActivity {
     public static int NEW_GAME = 1;
     public static int TWO_PLAYERS_GAME = 2;
     public static int RESUME_GAME = 3;
+    float y1left,y2left, y1right,y2right, yDiff;
+    long moveRightTime, moveLeftTime;
+    boolean up;
+    int tapCounter;
+    long tapTime;
+    int hitWall, hitPaddle, scoreLeft, scoreRigh;
+    SoundPool soundPool;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        gameView = new GameView(this, this);
+        soundPool = new SoundPool(4, AudioManager.STREAM_MUSIC, 0);
+        hitWall = soundPool.load(this, R.raw.hit_wall, 1);
+        hitPaddle = soundPool.load(this, R.raw.hit_paddle, 1);
+        scoreLeft = soundPool.load(this, R.raw.score_player, 1);
+        scoreRigh = soundPool.load(this, R.raw.score_opponent, 1);
+
+        gameView = new GameView(this, this,soundPool);
 
         setContentView(gameView);
+
 
         //getIntent().getBooleanExtra("new_game", true);
 
@@ -57,9 +75,8 @@ public class GameActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    @Override
-    public void onBackPressed() {
-        this.gameView.pause();
+    public void endGame(){
+        //this.gameView.pause();
 
         SharedPreferences sharedPreferences = getSharedPreferences("save", MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
@@ -87,74 +104,96 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if(gameView.endGame || gameView.paused){
+            endGame();
+        }
+        else{
+            gameView.pauseGame();
+        }
+    }
+
+    @Override
     public boolean onTouchEvent(MotionEvent event) {
-        boolean left = event.getX() < gameView.canvasWidth/2;
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN: {
-                if(!left && gameView.gameMode == 2)
-                    gameView.y1right = event.getY();
-                else{
-                    gameView.y1left = event.getY();
+        if(!gameView.paused && !gameView.endGame) {
+            boolean left = event.getX() < gameView.canvasWidth / 2;
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN: {
+                    if (!left && gameView.gameMode == 2)
+                        y1right = event.getY();
+                    else {
+                        y1left = event.getY();
+                    }
+                    break;
                 }
-                break;
+
+                case MotionEvent.ACTION_MOVE: {
+                    if (!left && gameView.gameMode == 2) {
+
+                        y2right = event.getY();
+                        yDiff = y2right - y1right;
+                        if (yDiff < 0) {
+                            gameView.player2.movingDown = false;
+                            gameView.player2.movingUp = true;
+                        } else if (yDiff > 0) {
+                            gameView.player2.movingUp = false;
+                            gameView.player2.movingDown = true;
+                        }
+                        y1right = y2right;
+
+                        gameView.moveRightTime = System.nanoTime();
+
+                        gameView.player2.moveDiff(yDiff);
+
+                    } else {
+
+                        y2left = event.getY();
+                        yDiff = y2left - y1left;
+                        if (yDiff < 0) {
+                            gameView.player1.movingDown = false;
+                            gameView.player1.movingUp = true;
+                        } else if (yDiff > 0) {
+                            gameView.player1.movingUp = false;
+                            gameView.player1.movingDown = true;
+                        }
+                        y1left = y2left;
+
+                        gameView.moveLeftTime = System.nanoTime();
+
+                        gameView.player1.moveDiff(yDiff);
+
+                    }
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    if (!left && gameView.gameMode == 2) {
+                        gameView.player2.movingUp = false;
+                        gameView.player2.movingDown = false;
+                    } else {
+                        gameView.player1.movingUp = false;
+                        gameView.player1.movingDown = false;
+                    }
+                    break;
+                }
             }
-            /*
-            case MotionEvent.ACTION_MOVE: {
-                if(!left && gameMode == 2){
-                    y2right = event.getY();
-                    yDiff = y1right - y2right;
-                    y1right = y2right;
-
-                        player2.moveDiff(yDiff);
-
+        }
+        else{
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN: {
+                    up = true;
+                    break;
                 }
-                else{
-                    y2left = event.getY();
-                    yDiff = y1left - y2left;
-                    y1left = y2left;
-
-                        player1.moveDiff(yDiff);
-
-                }
-                break;
-            }*/
-
-            case MotionEvent.ACTION_MOVE: {
-                if(!left && gameView.gameMode == 2){
-                    gameView.y2right = event.getY();
-                    gameView.yDiff = gameView.y1right - gameView.y2right;
-                    gameView.y1right = gameView.y2right;
-                    if (gameView.yDiff > 1) {
-                        gameView.player2.upAccel = true;
-                        gameView.player2.downAccel = false;
-                    } else if (gameView.yDiff < -1) {
-                        gameView.player2.upAccel = false;
-                        gameView.player2.downAccel = true;
+                case MotionEvent.ACTION_UP: {
+                    if(up){
+                        if(gameView.endGame){
+                            gameView.prepareNewGame();
+                        }
+                        else {
+                            gameView.resume();
+                        }
                     }
                 }
-                else{
-                    gameView.y2left = event.getY();
-                    gameView.yDiff = gameView.y1left - gameView.y2left;
-                    gameView.y1left = gameView.y2left;
-                    if (gameView.yDiff > 1) {
-                        gameView.player1.upAccel = true;
-                        gameView.player1.downAccel = false;
-                    } else if (gameView.yDiff < -1) {
-                        gameView.player1.upAccel = false;
-                        gameView.player1.downAccel = true;
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_UP: {
-                if(!left && gameView.gameMode == 2){
-                    gameView.player2.upAccel = false;
-                    gameView.player2.downAccel = false;
-                }
-                else {
-                    gameView.player1.upAccel = false;
-                    gameView.player1.downAccel = false;
-                }
+                up = false;
                 break;
             }
         }

@@ -7,6 +7,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -37,6 +40,7 @@ import static com.example.pong_app.GameSet.PLAYER_SPEED;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final Random random = new Random();
+    private PhoneCallListener phoneCallListener;
     Drawable background;
     float yDiff;
     public Ball ball;
@@ -45,7 +49,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameThread gameThread;
     private SurfaceHolder surfaceHolder;
     private boolean running = true;
-    private boolean paused;
+    public boolean paused;
     private boolean drawNet, ballSpeedIncrease;
     private boolean drawFPS, limiteFPS;
     int avgFPS = 0;
@@ -63,9 +67,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public int gameMode;
     private long previousTime;
     private int gameState;
-    boolean ballHitCurrentSection;
+    boolean ballHitCurrentSection, endGame;
+    long moveRightTime, moveLeftTime;
+    GameActivity gameActivity;
+    String winner;
+    SoundPool soundPool;
 
-    public GameView(Context context, Activity activity) {
+    public GameView(Context context, GameActivity activity, SoundPool sp) {
         super(context);
 
         this.setFocusable(true);
@@ -73,6 +81,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.getHolder().addCallback(this);
 
         gameState = activity.getIntent().getIntExtra("game_state", 0);
+
+        gameActivity = activity;
+
+        soundPool = sp;
+
 
     }
 
@@ -89,6 +102,8 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void init(Context context){
+
+        phoneCallListener = new PhoneCallListener(this);
 
         surfaceHolder = getHolder();
 
@@ -175,13 +190,20 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     protected void prepareNewGame(){
         resetBall();
 
+        endGame = false;
+        paused = false;
+
         player1.x = PLAYER_SPACING;
         player1.y = (float)canvasHeight/2;
-        player1.moveY = (float)player1.y;
+        player1.score = 0;
+        player1.moveY = (double)player1.y;
 
         player2.x = canvasWidth - PLAYER_SPACING - player1.width;
         player2.y = (float)canvasHeight/2;
-        player2.moveY = (float)player2.y;
+        player2.score = 0;
+        player2.moveY = (double)player2.y;
+
+        resume();
     }
 
     protected void prepareResumeGame(){
@@ -195,10 +217,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             ball.angle = sharedPreferences.getFloat("ball_angle", 20);
             player1.y = sharedPreferences.getFloat("player1_y", (float)canvasHeight/2);
             player1.score = sharedPreferences.getInt("player1_score", 0);
-            player1.moveY = sharedPreferences.getFloat("player1_move_y", (float)canvasHeight/2);
+            player1.moveY = (double) sharedPreferences.getFloat("player1_move_y", (float)canvasHeight/2);
             player2.y = sharedPreferences.getFloat("player2_y", (float)canvasHeight/2);
             player2.score = sharedPreferences.getInt("player2_score", 0);
-            player1.moveY = sharedPreferences.getFloat("player2_move_y", (float)canvasHeight/2);
+            player1.moveY = (double) sharedPreferences.getFloat("player2_move_y", (float)canvasHeight/2);
         }
     }
 
@@ -261,6 +283,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawText(String.valueOf(player1.score), canvasWidth/4, canvasHeight/5, paint);
             canvas.drawText(String.valueOf(player2.score), 3*canvasWidth/4, canvasHeight/5, paint);
 
+            if(endGame){
+                //paint.setColor(SCORE_COLOR);
+                canvas.drawText(winner + " player win !", canvasWidth/3, canvasHeight/2, paint);
+                canvas.drawText("Tap on screen to start new game", canvasWidth/3 - 200, canvasHeight/2 + 100, paint);
+                canvas.drawText("Tap on back button to go to menu", canvasWidth/3 - 200, canvasHeight/2 + 200, paint);
+            }
+            else if(paused){
+                //paint.setColor(SCORE_COLOR);
+                canvas.drawText("Game paused !", canvasWidth/3, canvasHeight/2, paint);
+                canvas.drawText("Tap on screen to continue", canvasWidth/3 - 50, canvasHeight/2 + 100, paint);
+                canvas.drawText("Tap on back button to go to menu", canvasWidth/3 - 150, canvasHeight/2 + 200, paint);
+            }
+
             //surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
@@ -294,7 +329,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 ballHitCurrentSection = ball.y  <= player.y + j * player.height / PLAYER_SECTIONS;
             }
             if (ballHitCurrentSection) {
-                if(player.movingDown){
+                if(player.movingUp){
                     if(player.left) {
                         ball.angle = PLAYERUP_SECTION_ANGLES[i] * (-1);
                     }
@@ -302,7 +337,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         ball.angle = PLAYERUP_SECTION_ANGLES[i];
                     }
                 }
-                else if(player.movingUp){
+                else if(player.movingDown){
                     if(player.left) {
                         ball.angle = PLAYERDOWN_SECTION_ANGLES[i];
                     }
@@ -359,6 +394,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     public void pause() {
+        paused = true;
         gameThread.setRunning(false);
         try {
             gameThread.join();
@@ -368,21 +404,40 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         previousTime = 0;
     }
 
+    public void pauseGame(){
+        pause();
+        //drawPause();
+    }
+
+    private void winPlayer(boolean left){
+        resetBall();
+        endGame = true;
+        if(left){
+            winner = "Left";
+        }
+        else {
+            winner = "Right";
+        }
+
+        gameThread.setRunning(false);
+        previousTime = 0;
+    }
+
+    public void endGame(){
+        gameActivity.endGame();
+    }
+
 
     public void resume() {
+        endGame = false;
+        paused = false;
         gameThread = new GameThread(surfaceHolder, this, FPS, limiteFPS);
         gameThread.setRunning(true);
         gameThread.start();
+        paused = false;
     }
 
     protected void update(long currentTime){
-
-        //System.out.println(currentTime);
-
-        if(paused){
-            pause();
-        }
-
 
         if (previousTime == 0) {
             previousTime = currentTime;
@@ -407,11 +462,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (ball.x <= 0) {
             //userScore.play();
             player2.score++;
+            soundPool.play(gameActivity.scoreRigh, 1.0f,1.0f,1,0,1.0f);
             resetBall();
         }
 
         else if (ball.x >= canvasWidth) {
             //oppScore.play();
+            soundPool.play(gameActivity.scoreLeft, 1.0f,1.0f,1,0,1.0f);
             player1.score++;
             resetBall();
         }
@@ -419,42 +476,36 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         //-------------------- kontrola kolizie micku s vrchnym a spodnym okrajom ------------------
         if (ball.y + ball.radius >= canvasHeight) {
-            //wall.play();
+            soundPool.play(gameActivity.hitWall, 1.0f,1.0f,1,0,1.0f);
             ball.angle = ball.angle * -1;
             ball.y = canvasHeight - ball.radius - 1;
         }
         else if (ball.y - ball.radius <= 0) {
-            //wall.play();
+            soundPool.play(gameActivity.hitWall, 1.0f,1.0f,1,0,1.0f);
             ball.angle = ball.angle * -1;
             ball.y = ball.radius + 1;
         }
 
         //---------------------------- kontrola skore -----------------------------------------------
 
-        if (player1.score > MAX_SCORE || player2.score > MAX_SCORE) {
-
-            //clearInterval(loop);
-            if(player1.score > MAX_SCORE){
-                //document.getElementById('state').innerHTML = "You Won !!!";
-            }
-            else{
-                //document.getElementById('state').innerHTML = "You lost !!!";
-            }
-            //document.getElementById("push-button11").disabled = true;
-            //document.getElementById('dialog-2').show();
+        if (player1.score >= MAX_SCORE) {
+            winPlayer(true);
+        }
+        if(player2.score >= MAX_SCORE){
+            winPlayer(false);
         }
 
 
         if(ball.x < canvasWidth / 2){
             if(collision(ball, player1)){
-                //hit.play();
+                soundPool.play(gameActivity.hitPaddle, 1.0f,1.0f,1,0,1.0f);
                 playerBallCollision(player1);
             }
 
         }
         else{
             if(collision(ball, player2)){
-                //hit.play();
+                soundPool.play(gameActivity.hitPaddle, 1.0f,1.0f,1,0,1.0f);
                 playerBallCollision(player2);
             }
         }
@@ -467,43 +518,27 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             else{
                 player2.y += ((ball.y - (player2.y + player2.height/2)))* DIFFICULTY;
             }
-            player1.move();
+            //player1.move();
         }
         else{
-            player1.move();
-            player2.move();
+            //player1.move();
+            //player2.move();
         }
 
-
-        //secondsElapsed = (currentTime - previousTime) / 1_000_000_000.0;
-
-
-        //System.out.println(secondsElapsed);
-
-
-        /*
-        if (secondsElapsed > 1/FPS) {
-            secondsElapsed = 1/FPS;
-        }*/
-
-        //ball.move(secondsElapsed);
-
-
-        //ball.move(frameTime);
         diffTime = (System.nanoTime() - previousTime) / 1_000_000_000.0;
         ball.move(diffTime);
         previousTime = System.nanoTime();
 
-        //System.out.println(ball.x);
-        //System.out.println(ball.y);
 
-        player1.upAccel = false;
-        player1.downAccel = false;
+        if(previousTime - moveLeftTime > 30_000_000){
+            player1.movingUp = false;
+            player1.movingDown = false;
+        }
 
-        player2.upAccel = false;
-        player2.downAccel = false;
-
-        previousTime = currentTime;
+        if(previousTime - moveRightTime > 30_000_000){
+            player2.movingUp = false;
+            player2.movingDown = false;
+        }
     }
 
     public void resetBall(){
@@ -520,84 +555,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
     }
-
-
-
-    /*
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean left = event.getX() < canvasWidth/2;
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN: {
-                if(!left && gameMode == 2)
-                    y1right = event.getY();
-                else{
-                    y1left = event.getY();
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                if(!left && gameMode == 2){
-                    y2right = event.getY();
-                    yDiff = y1right - y2right;
-                    y1right = y2right;
-
-                        player2.moveDiff(yDiff);
-
-                }
-                else{
-                    y2left = event.getY();
-                    yDiff = y1left - y2left;
-                    y1left = y2left;
-
-                        player1.moveDiff(yDiff);
-
-                }
-                break;
-            }
-
-            case MotionEvent.ACTION_MOVE: {
-                if(!left && gameMode == 2){
-                    y2right = event.getY();
-                    yDiff = y1right - y2right;
-                    y1right = y2right;
-                    if (yDiff > 1) {
-                        player2.upAccel = true;
-                        player2.downAccel = false;
-                    } else if (yDiff < -1) {
-                        player2.upAccel = false;
-                        player2.downAccel = true;
-                    }
-                }
-                else{
-                    y2left = event.getY();
-                    yDiff = y1left - y2left;
-                    y1left = y2left;
-                    if (yDiff > 1) {
-                        player1.upAccel = true;
-                        player1.downAccel = false;
-                    } else if (yDiff < -1) {
-                        player1.upAccel = false;
-                        player1.downAccel = true;
-                    }
-                }
-                break;
-            }
-            case MotionEvent.ACTION_UP: {
-                if(!left && gameMode == 2){
-                    player2.upAccel = false;
-                    player2.downAccel = false;
-                }
-                else {
-                    player1.upAccel = false;
-                    player1.downAccel = false;
-                }
-                break;
-            }
-        }
-        return true;
-    }*/
 
     public GameThread getGameThread(){
         return this.gameThread;
